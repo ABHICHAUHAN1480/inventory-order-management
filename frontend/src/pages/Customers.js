@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { getCustomers, createCustomer, deleteCustomer } from '../api'; // Maan ke chal rahe hain api.js mein ye functions hain
 import './Customers.css';
 
@@ -10,11 +10,12 @@ function Customers() {
   const [formData, setFormData] = useState({ name: '', email: '', phone: '' });
   const [uiMessage, setUiMessage] = useState({ text: '', type: '' });
 
-  useEffect(() => {
-    fetchCustomersList();
+  const showNotification = useCallback((text, type) => {
+    setUiMessage({ text, type });
+    setTimeout(() => setUiMessage({ text: '', type: '' }), 4000);
   }, []);
 
-  const fetchCustomersList = async () => {
+  const fetchCustomersList = useCallback(async () => {
     try {
       setLoading(true);
       const data = await getCustomers();
@@ -24,12 +25,11 @@ function Customers() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [showNotification]);
 
-  const showNotification = (text, type) => {
-    setUiMessage({ text, type });
-    setTimeout(() => setUiMessage({ text: '', type: '' }), 4000);
-  };
+  useEffect(() => {
+    fetchCustomersList();
+  }, [fetchCustomersList]);
 
   const handleInputChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
